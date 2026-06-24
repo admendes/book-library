@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from loguru import logger
 from pydantic import BaseModel
 
 
@@ -22,9 +23,16 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def book_not_found_handler(
         request: Request, exc: BookNotFoundError
     ) -> JSONResponse:
+        detail = f"Book {exc.book_id} not found"
+        logger.bind(
+            method=request.method,
+            path=request.url.path,
+            status_code=404,
+            detail=detail,
+        ).warning("Request error")
         return JSONResponse(
             status_code=404,
-            content={"error": "not_found", "detail": f"Book {exc.book_id} not found"},
+            content={"error": "not_found", "detail": detail},
         )
 
     @app.exception_handler(RequestValidationError)
@@ -32,6 +40,12 @@ def register_exception_handlers(app: FastAPI) -> None:
         request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         detail = "; ".join(e["msg"] for e in exc.errors())
+        logger.bind(
+            method=request.method,
+            path=request.url.path,
+            status_code=422,
+            detail=detail,
+        ).warning("Request error")
         return JSONResponse(
             status_code=422,
             content={"error": "validation_error", "detail": detail},
@@ -39,10 +53,14 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
+        detail = "An unexpected error occurred"
+        logger.bind(
+            method=request.method,
+            path=request.url.path,
+            status_code=500,
+            detail=detail,
+        ).error("Unhandled exception")
         return JSONResponse(
             status_code=500,
-            content={
-                "error": "internal_error",
-                "detail": "An unexpected error occurred",
-            },
+            content={"error": "internal_error", "detail": detail},
         )

@@ -17,6 +17,14 @@ class BookStore:
     def get_by_id(self, book_id: UUID) -> Book | None:
         return self._books.get(book_id)
 
+    def update(self, book_id: UUID, updates: dict[str, object]) -> Book | None:
+        book = self._books.get(book_id)
+        if book is None:
+            return None
+        updated = book.model_copy(update=updates)
+        self._books[book_id] = updated
+        return updated
+
     def delete(self, book_id: UUID) -> bool:
         if book_id in self._books:
             del self._books[book_id]
