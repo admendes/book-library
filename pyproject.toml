@@ -1,0 +1,31 @@
+[project]
+name = "book-library"
+version = "0.1.0"
+description = "A simple book library REST API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "loguru",
+]
+
+[project.scripts]
+start = "uvicorn app.main:app --reload"
+
+[dependency-groups]
+dev = [
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+fix = true
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
