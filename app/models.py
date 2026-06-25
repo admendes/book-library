@@ -1,19 +1,8 @@
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Literal
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from pydantic import BaseModel, Field
-
-
-class Book(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
-    title: str
-    author: str
-    year: int
-    genre: str | None = None
-    rating: float | None = Field(default=None, ge=0.0, le=5.0)
-    status: Literal["want_to_read", "reading", "read"] = "want_to_read"
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BookCreate(BaseModel):
@@ -34,8 +23,17 @@ class BookUpdate(BaseModel):
     status: Literal["want_to_read", "reading", "read"] | None = None
 
 
-class BookResponse(Book):
-    pass
+class BookResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title: str
+    author: str
+    year: int
+    genre: str | None
+    rating: float | None
+    status: Literal["want_to_read", "reading", "read"]
+    created_at: datetime
 
 
 class PaginatedResponse[T](BaseModel):
@@ -49,3 +47,20 @@ class BookStats(BaseModel):
     total: int
     average_rating: float | None
     status_breakdown: dict[str, int]
+
+
+class UserCreate(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=8)
+
+
+class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
