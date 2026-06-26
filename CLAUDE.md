@@ -113,7 +113,17 @@ The app is a FastAPI REST API backed by SQLite via SQLAlchemy, organised into fe
 - `uv.lock` — never edit manually
 - The `get_db` + `get_current_user` dependency sharing pattern — do not refactor this
 
+## Module structure rules
+
+New files must always go inside one of the three feature modules. Use this as the decision guide:
+
+- `app/core/` — infrastructure shared across the whole app (database, ORM models, exceptions, logging)
+- `app/auth/` — anything related to users, registration, login, or JWT
+- `app/books/` — anything related to book data (schemas, queries, routes)
+
+Never create new top-level files directly under `app/`. If a new feature doesn't fit any existing module, ask before creating a new one.
+
 ## Before deploying
 
-- Replace hardcoded `SECRET_KEY` with `os.environ["SECRET_KEY"]`
-- Set `reload=False` in uvicorn
+- Set the `SECRET_KEY` environment variable — the app reads it via `os.environ.get("SECRET_KEY")` and logs a warning at startup if it falls back to the insecure dev default
+- Run uvicorn without `--reload` (development flag only)

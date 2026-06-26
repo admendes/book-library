@@ -1,14 +1,22 @@
+import os
 from datetime import UTC, datetime, timedelta
 
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.db_models import UserDB
 
-SECRET_KEY = "change-me-in-production"  # use an env var in production
+_DEV_SECRET = "change-me-in-production"
+SECRET_KEY = os.environ.get("SECRET_KEY", _DEV_SECRET)
+if SECRET_KEY == _DEV_SECRET:
+    logger.warning(
+        "SECRET_KEY not set - using insecure dev default. Set SECRET_KEY in prod."
+    )
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
