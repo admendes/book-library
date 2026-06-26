@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import ForeignKey, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.core.database import Base
 
 
 class UserDB(Base):

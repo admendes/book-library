@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.db_models import BookDB, UserDB
-from app.models import BookCreate, BookStats
+from app.books.schemas import BookCreate, BookStats
+from app.core.db_models import BookDB, UserDB
 
 
 def add_book(db: Session, data: BookCreate, owner: UserDB) -> BookDB:

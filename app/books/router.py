@@ -5,18 +5,18 @@ from fastapi.responses import Response
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from app import store
-from app.auth import get_current_user
-from app.database import get_db
-from app.db_models import UserDB
-from app.exceptions import BookNotFoundError
-from app.models import (
+from app.auth.service import get_current_user
+from app.books import crud
+from app.books.schemas import (
     BookCreate,
     BookResponse,
     BookStats,
     BookUpdate,
     PaginatedResponse,
 )
+from app.core.database import get_db
+from app.core.db_models import UserDB
+from app.core.exceptions import BookNotFoundError
 
 router = APIRouter(prefix="/books", tags=["books"])
 
@@ -26,7 +26,7 @@ def get_stats(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ) -> BookStats:
-    return store.get_stats(db, current_user.id)
+    return crud.get_stats(db, current_user.id)
 
 
 @router.get("", response_model=PaginatedResponse[BookResponse])
@@ -38,7 +38,7 @@ def list_books(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ) -> PaginatedResponse[BookResponse]:
-    books = store.get_books(db, current_user.id, genre=genre, search=search)
+    books = crud.get_books(db, current_user.id, genre=genre, search=search)
     total = len(books)
     start = (page - 1) * page_size
     return PaginatedResponse(
@@ -57,7 +57,7 @@ def create_book(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ) -> BookResponse:
-    book = store.add_book(db, data, current_user)
+    book = crud.add_book(db, data, current_user)
     logger.info(f'Book created: id={book.id} title="{book.title}"')
     return BookResponse.model_validate(book)
 
@@ -68,7 +68,7 @@ def get_book(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ) -> BookResponse:
-    book = store.get_book(db, book_id, current_user.id)
+    book = crud.get_book(db, book_id, current_user.id)
     if book is None:
         raise BookNotFoundError(book_id)
     return BookResponse.model_validate(book)
@@ -81,11 +81,11 @@ def update_book(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ) -> BookResponse:
-    book = store.get_book(db, book_id, current_user.id)
+    book = crud.get_book(db, book_id, current_user.id)
     if book is None:
         raise BookNotFoundError(book_id)
     updates = data.model_dump(exclude_unset=True)
-    book = store.update_book(db, book, updates)
+    book = crud.update_book(db, book, updates)
     logger.info(f"Book updated: id={book_id}")
     return BookResponse.model_validate(book)
 
@@ -96,9 +96,9 @@ def delete_book(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ) -> Response:
-    book = store.get_book(db, book_id, current_user.id)
+    book = crud.get_book(db, book_id, current_user.id)
     if book is None:
         raise BookNotFoundError(book_id)
-    store.delete_book(db, book)
+    crud.delete_book(db, book)
     logger.info(f"Book deleted: id={book_id}")
     return Response(status_code=status.HTTP_204_NO_CONTENT)

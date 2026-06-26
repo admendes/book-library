@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-from app.auth_routes import router as auth_router
-from app.database import Base, engine
-from app.exceptions import register_exception_handlers
-from app.logging import add_request_logging, setup_logging
-from app.routes import router as books_router
+from app.auth.router import router as auth_router
+from app.books.router import router as books_router
+from app.core.database import Base, engine
+from app.core.exceptions import register_exception_handlers
+from app.core.logging import add_request_logging, setup_logging
 
 setup_logging()
 

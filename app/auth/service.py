@@ -5,8 +5,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.db_models import UserDB
+from app.core.database import get_db
+from app.core.db_models import UserDB
 
 SECRET_KEY = "change-me-in-production"  # use an env var in production
 ALGORITHM = "HS256"
